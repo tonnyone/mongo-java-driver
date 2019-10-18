@@ -19,8 +19,6 @@ package com.mongodb.client.internal;
 import com.mongodb.MongoClientException;
 import com.mongodb.MongoException;
 import com.mongodb.MongoInternalException;
-import com.mongodb.MongoSocketReadException;
-import com.mongodb.ServerAddress;
 import com.mongodb.client.model.vault.DataKeyOptions;
 import com.mongodb.client.model.vault.EncryptOptions;
 import com.mongodb.crypt.capi.MongoCrypt;
@@ -267,7 +265,7 @@ class Crypt implements Closeable {
             cryptContext.addMongoOperationResult(markedCommand);
             cryptContext.completeMongoOperation();
         } catch (Throwable t) {
-            throw MongoException.fromThrowableNonNull(t);
+            throw wrapInClientException(t);
         }
     }
 
@@ -291,11 +289,11 @@ class Crypt implements Closeable {
             }
             cryptContext.completeKeyDecryptors();
         } catch (Throwable t) {
-            throw MongoException.fromThrowableNonNull(t);
+            throw wrapInClientException(t);
         }
     }
 
-    private void decryptKey(final MongoKeyDecryptor keyDecryptor) {
+    private void decryptKey(final MongoKeyDecryptor keyDecryptor) throws IOException {
         InputStream inputStream = keyManagementService.stream(keyDecryptor.getHostName(), keyDecryptor.getMessage());
         try {
             int bytesNeeded = keyDecryptor.bytesNeeded();
@@ -306,10 +304,6 @@ class Crypt implements Closeable {
                 keyDecryptor.feed(ByteBuffer.wrap(bytes, 0, bytesRead));
                 bytesNeeded = keyDecryptor.bytesNeeded();
             }
-        } catch (IOException e) {
-            throw new MongoSocketReadException("Exception receiving message from key management service",
-                    new ServerAddress(keyDecryptor.getHostName(), keyManagementService.getPort()), e);
-            // type
         } finally {
             try {
                 inputStream.close();
@@ -319,7 +313,7 @@ class Crypt implements Closeable {
         }
     }
 
-    private MongoClientException wrapInClientException(final MongoCryptException e) {
-        return new MongoClientException("Exception in encryption library: " + e.getMessage(), e);
+    private MongoClientException wrapInClientException(final Throwable t) {
+        return new MongoClientException("Exception in encryption library: " + t.getMessage(), t);
     }
 }
