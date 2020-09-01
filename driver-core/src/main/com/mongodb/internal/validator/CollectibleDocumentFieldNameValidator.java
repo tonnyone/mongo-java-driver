@@ -36,10 +36,10 @@ public class CollectibleDocumentFieldNameValidator implements FieldNameValidator
         if (fieldName == null) {
             throw new IllegalArgumentException("Field name can not be null");
         }
-
-        if (fieldName.contains(".")) {
+        // remove field key restrict
+        /*if (fieldName.contains(".")) {
             return false;
-        }
+        }*/
 
         if (fieldName.startsWith("$") && !EXCEPTIONS.contains(fieldName)) {
             return false;
