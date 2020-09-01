@@ -40,7 +40,6 @@ public class CollectibleDocumentFieldNameValidator implements FieldNameValidator
         /*if (fieldName.contains(".")) {
             return false;
         }*/
-
         if (fieldName.startsWith("$") && !EXCEPTIONS.contains(fieldName)) {
             return false;
         }
