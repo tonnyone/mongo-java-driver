@@ -1,3 +1,6 @@
+#
+删除原版本 key不能包含 . 的限制
+
 ## Release Notes
 
 Release notes are available [here](https://github.com/mongodb/mongo-java-driver/releases).
